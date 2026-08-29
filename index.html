@@ -37,15 +37,6 @@
         .chat-input-row input { flex: 1; background: transparent; border: none; padding: 8px; color: white; outline: none; }
         .btn-send { background: #334155; color: #34d399; border: 1px solid #475569; padding: 0 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     </style>
-    
-    <!-- IMPORTANTE: CARREGA O CONECTOR DE MODELOS DO GOOGLE AI OFICIAL -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run"
-        }
-      }
-    </script>
 </head>
 <body>
     <div class="container">
@@ -93,14 +84,14 @@
         </div>
     </div>
 
-    <script type="module">
-        import { GoogleGenAI } from "@google/generative-ai";
+    <script>
+        // Inicialização estável dos dados locais
+        let carteira = JSON.parse(localStorage.getItem('carteira')) || [];
 
-        window.carteira = JSON.parse(localStorage.getItem('carteira')) || [];
-
-        document.getElementById('apiKey').addEventListener('input', (e) => {
+        // Ouve a digitação e altera imediatamente o status visual da API
+        document.getElementById('apiKey').addEventListener('input', function(e) {
             const status = document.getElementById('apiStatus');
-            if(e.target.value.trim().length > 10) {
+            if (e.target.value.trim().length > 10) {
                 status.innerHTML = '🟢 API Configurada';
                 status.style.color = '#34d399';
             } else {
@@ -109,20 +100,24 @@
             }
         });
 
-        window.salvarCarteira = function() {
-            localStorage.setItem('carteira', JSON.stringify(window.carteira));
+        function salvarCarteira() {
+            localStorage.setItem('carteira', JSON.stringify(carteira));
             renderizarDashboard();
         }
 
-        window.adicionarAtivo = function() {
+        function adicionarAtivo() {
             const ticker = document.getElementById('tickerInput').value.toUpperCase().trim();
             const qtd = parseFloat(document.getElementById('qtdInput').value);
             const preco = parseFloat(document.getElementById('precoInput').value);
-            if(!ticker || isNaN(qtd) || isNaN(preco)) return alert("Preencha todos os campos!");
+            
+            if (!ticker || isNaN(qtd) || isNaN(preco)) return alert("Preencha todos os campos!");
+            
             const variacao = (Math.random() * (1.1 - 0.9) + 0.9);
             const precoAtual = parseFloat((preco * variacao).toFixed(2));
-            window.carteira.push({ ticker, qtd, preco, precoAtual });
-            window.salvarCarteira();
+            
+            carteira.push({ ticker, qtd, preco, precoAtual });
+            salvarCarteira();
+            
             document.getElementById('tickerInput').value = '';
             document.getElementById('qtdInput').value = '';
             document.getElementById('precoInput').value = '';
@@ -132,12 +127,14 @@
             const corpo = document.getElementById('tabelaCorpo');
             corpo.innerHTML = '';
             let totalBr = 0; let totalUs = 0;
-            window.carteira.forEach(ativo => {
+            
+            carteira.forEach(ativo => {
                 const total = ativo.qtd * ativo.precoAtual;
                 const isBr = ativo.ticker.includes('.SA');
                 const moeda = isBr ? 'R$' : 'US$';
-                if(isBr) totalBr += total; else totalUs += total;
+                if (isBr) totalBr += total; else totalUs += total;
                 const badge = isBr ? `<span class="badge-br">BR 🇧🇷</span>` : `<span class="badge-us">US 🇺🇸</span>`;
+                
                 corpo.innerHTML += `
                     <tr>
                         <td style="font-weight:bold; border-bottom: 1px solid #334155;">${ativo.ticker}${badge}</td>
@@ -152,54 +149,11 @@
             document.getElementById('cardUs').innerText = `US$ ${totalUs.toFixed(2)}`;
         }
 
-                    async function perguntarIA() {
+        async function perguntarIA() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const pergunta = document.getElementById('iaPergunta').value.trim();
-            const boxChat = document.getElementById('chatResponse');
-
-            if (!apiKey || !pergunta) return alert("Insira a API Key e a pergunta!");
-
-            // 1. Faz o botão voltar a funcionar: Adiciona a pergunta na tela
-            boxChat.innerHTML += `<div class="msg-user">${pergunta}</div>`;
-            document.getElementById('iaPergunta').value = '';
-            boxChat.scrollTop = boxChat.scrollHeight;
-            
-            let ctx = carteira.map(a => `${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}`).join(' | ');
-            if (!ctx) ctx = "Nenhum ativo cadastrado ainda.";
-
-            try {
-                // 2. A URL oficial que aceita chaves PRO mistas no GitHub Pages
-                const url = "https://googleapis.com" + apiKey;
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte pergunta do investidor: " + pergunta }] }] 
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                // 3. Caminho padrão do Google para extrair o texto
-                const textoIA = data.candidates[0].content.parts[0].text;
-                boxChat.innerHTML += `<div class="msg-ai">${textoIA}</div>`;
-
-            } catch (e) {
-                boxChat.innerHTML += `<div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>`;
-            }
-            boxChat.scrollTop = boxChat.scrollHeight;
+const boxChat = document.getElementById('chatResponse');if (!apiKey || !pergunta) return alert("Insira a API Key e a pergunta!");// Insere imediatamente a pergunta do usuário no chatboxChat.innerHTML += <div class="msg-user">${pergunta}</div>;document.getElementById('iaPergunta').value = '';boxChat.scrollTop = boxChat.scrollHeight;let ctx = carteira.map(a => ${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}).join(' | ');if (!ctx) ctx = "Nenhum ativo cadastrado ainda.";try {// Endpoint unificado compatível com chaves de segurança máxima "AQ." no plano PROconst url = "googleapis.com" + apiKey;const response = await fetch(url, {method: 'POST',headers: {'Content-Type': 'application/json'},body: JSON.stringify({contents: [{ parts: [{ text: "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte pergunta do investidor: " + pergunta }] }]})});const data = await response.json();if (data.error) {throw new Error(data.error.message);}const textoIA = data.candidates[0].content.parts[0].text;boxChat.innerHTML += <div class="msg-ai">${textoIA}</div>;} catch (e) {boxChat.innerHTML += <div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>;}boxChat.scrollTop = boxChat.scrollHeight;}// Executa a montagem inicial da tabelarenderizarDashboard();
         }
-
-        renderizarDashboard();
-    </script>
+  </script>
 </body>
 </html>
-
-
