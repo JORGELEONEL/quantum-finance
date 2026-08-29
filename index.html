@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+< lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Finance AI - PRO</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        header { background-color: #1e293b; padding: 20px; border-radius: 16px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        header h1 { color: #34d399; font-size: 24px; font-weight: bold; }
+        .api-input { background: #0f172a; border: 1px solid #475569; border-radius: 8px; padding: 10px; color: #f8fafc; width: 280px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .card { background-color: #1e293b; padding: 20px; border-radius: 16px; border: 1px solid #334155; }
+        .card-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+        .card-value { font-size: 22px; font-weight: bold; margin-top: 5px; }
+        #cardBr { color: #34d399; }
+        #cardUs { color: #22d3ee; }
+        .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 1024px) { .main-grid { grid-template-columns: 350px 1fr; } }
+        .form-box, .table-box, .chat-box { background-color: #1e293b; padding: 20px; border-radius: 16px; border: 1px solid #334155; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 12px; color: #94a3b8; }
+        .form-group input { background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; color: #f8fafc; }
+        .btn-add { background-color: #34d399; color: #0f172a; border: none; border-radius: 8px; padding: 12px; font-weight: bold; width: 100%; cursor: pointer; }
+        .table-wrapper { overflow-x: auto; background: #0f172a; border-radius: 8px; border: 1px solid #334155; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+        th { font-size: 11px; color: #94a3b8; text-transform: uppercase; background: #090d16; }
+        .badge-br { background: rgba(52,211,153,0.1); color: #34d399; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 5px; border: 1px solid rgba(52,211,153,0.2); font-weight: bold; }
+        .badge-us { background: rgba(34,211,238,0.1); color: #22d3ee; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 5px; border: 1px solid rgba(34,211,238,0.2); font-weight: bold; }
+        .chat-display { background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 15px; height: 160px; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 10px; }
+        .msg-user { background: rgba(52,211,153,0.1); color: #34d399; padding: 10px; border-radius: 8px; align-self: flex-end; max-width: 85%; border: 1px solid rgba(52,211,153,0.2); font-size: 13px; }
+        .msg-ai { background: #1e293b; color: #cbd5e1; padding: 10px; border-radius: 8px; align-self: flex-start; max-width: 85%; border: 1px solid #334155; white-space: pre-line; font-size: 13px; }
+        .chat-input-row { display: flex; gap: 10px; background: #0f172a; padding: 5px; border-radius: 8px; border: 1px solid #334155; }
+        .chat-input-row input { flex: 1; background: transparent; border: none; padding: 8px; color: white; outline: none; }
+        .btn-send { background: #334155; color: #34d399; border: 1px solid #475569; padding: 0 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<>
+    <div class="container">
+        <header>
+            <div><h1>Quantum Finance AI 🚀</h1><p>Dashboard Inteligente integrado ao Gemini PRO</p></div>
+            <input type="password" id="apiKey" placeholder="Cole sua API Key do Gemini PRO..." class="api-input">
+        </header>
+
+        <div class="cards-grid">
+            <div class="card"><p class="card-title">Total Brasil</p><h3 class="card-value" id="cardBr">R$ 0,00</h3></div>
+            <div class="card"><p class="card-title">Total EUA</p><h3 class="card-value" id="cardUs">US$ 0,00</h3></div>
+            <div class="card"><p class="card-title">Status da API</p><h3 id="apiStatus" style="color:#fbbf24; font-size:14px;">⚫ Requer Configuração</h3></div>
+        </div>
+
+        <div class="main-grid">
+            <div class="form-box">
+                <h2 style="font-size:16px; margin-bottom:15px;">Adicionar Ativo</h2>
+                <div class="form-group"><label>Ticker (Ex: PETR4.SA ou AAPL)</label><input type="text" id="tickerInput"></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="form-group"><label>Quantidade</label><input type="number" id="qtdInput"></div>
+                    <div class="form-group"><label>Preço Pago</label><input type="number" step="0.01" id="precoInput"></div>
+                </div>
+                <button onclick="adicionarAtivo()" class="btn-add">Inserir no Portfólio</button>
+            </div>
+            <div class="table-box">
+                <h2 style="font-size:16px; margin-bottom:15px;">Seus Ativos Cadastrados</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Ativo</th><th>Qtd</th><th>Média</th><th>Atual</th><th style="text-align:right;">Total</th></tr></thead>
+                        <tbody id="tabelaCorpo"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-box">
+            <h2 style="font-size:16px; color:#22d3ee;">Consultor Financeiro PRO</h2>
+            <div id="chatResponse" class="chat-display">
+                <div style="color:#fbbf24; font-size:12px;">⚠️ Para habilitar o chat, insira sua chave API do Gemini PRO no topo direito.</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="iaPergunta" placeholder="Pergunte sobre sua carteira atual ao Gemini PRO...">
+                <button onclick="perguntarIA()" class="btn-send">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let carteira = JSON.parse(localStorage.getItem('carteira')) || [];
+
+        document.getElementById('apiKey').addEventListener('input', (e) => {
+            const status = document.getElementById('apiStatus');
+            if(e.target.value.trim().length > 10) {
+                status.innerHTML = '🟢 API Configurada';
+                status.style.color = '#34d399';
+            } else {
+                status.innerHTML = '⚫ Requer Configuração';
+                status.style.color = '#fbbf24';
+            }
+        });
+
+        function salvarCarteira() {
+            localStorage.setItem('carteira', JSON.stringify(carteira));
+            renderizarDashboard();
+        }
+
+        function adicionarAtivo() {
+            const ticker = document.getElementById('tickerInput').value.toUpperCase().trim();
+            const qtd = parseFloat(document.getElementById('qtdInput').value);
+            const preco = parseFloat(document.getElementById('precoInput').value);
+            if(!ticker || isNaN(qtd) || isNaN(preco)) return alert("Preencha todos os campos!");
+            const variacao = (Math.random() * (1.1 - 0.9) + 0.9);
+            const precoAtual = parseFloat((preco * variacao).toFixed(2));
+            carteira.push({ ticker, qtd, preco, precoAtual });
+            salvarCarteira();
+            document.getElementById('tickerInput').value = '';
+            document.getElementById('qtdInput').value = '';
+            document.getElementById('precoInput').value = '';
+        }
+
+        function renderizarDashboard() {
+            const corpo = document.getElementById('tabelaCorpo');
+            corpo.innerHTML = '';
+            let totalBr = 0; let totalUs = 0;
+            carteira.forEach(ativo => {
+                const total = ativo.qtd * ativo.precoAtual;
+                const isBr = ativo.ticker.includes('.SA');
+                const moeda = isBr ? 'R$' : 'US$';
+                if(isBr) totalBr += total; else totalUs += total;
+                const badge = isBr ? `<span class="badge-br">BR 🇧🇷</span>` : `<span class="badge-us">US 🇺🇸</span>`;
+                corpo.innerHTML += `
+                    <tr>
+                        <td style="font-weight:bold; border-bottom: 1px solid #334155;">${ativo.ticker}${badge}</td>
+                        <td style="border-bottom: 1px solid #334155;">${ativo.qtd}</td>
+                        <td style="border-bottom: 1px solid #334155;">${moeda} ${ativo.preco.toFixed(2)}</td>
+                        <td style="border-bottom: 1px solid #334155; color:#fbbf24;">${moeda} ${ativo.precoAtual.toFixed(2)}</td>
+                        <td style="border-bottom: 1px solid #334155; font-weight:bold; text-align:right;">${moeda} ${total.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('cardBr').innerText = `R$ ${totalBr.toFixed(2)}`;
+            document.getElementById('cardUs').innerText = `US$ ${totalUs.toFixed(2)}`;
+        }
+
+                 async function perguntarIA() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const pergunta = document.getElementById('iaPergunta').value.trim();
+            const boxChat = document.getElementById('chatResponse');
+
+            if (!apiKey || !pergunta) return alert("Insira a API Key e a pergunta!");
+
+            boxChat.innerHTML += `<div class="msg-user">${pergunta}</div>`;
+            document.getElementById('iaPergunta').value = '';
+            boxChat.scrollTop = boxChat.scrollHeight;
+
+            // ESTA LINHA ABAIXO FOI CORRIGIDA COM AS CRASES CORRETAS
+            const ctx = carteira.map(a => `${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}`).join(' | ');
+
+            try {
+                const url = "https://googleapis.com";
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey 
+                    },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados à seguinte pergunta do investidor: " + pergunta }] }] })
+                });
+                const data = await response.json();
+                const texto = data.candidates.content.parts.text;
+                boxChat.innerHTML += `<div class="msg-ai">${texto}</div>`;
+            } catch (e) {
+                boxChat.innerHTML += `<div class="msg-ai" style="color:#f87171;">⚠️ Erro ao falar com o Gemini PRO. Verifique sua chave ou se o projeto no Google Cloud está ativo.</div>`;
+            }
+            boxChat.scrollTop = boxChat.scrollHeight;
+        }
+
+        renderizarDashboard();
+    </script>
+</body>
+</html>
+      
