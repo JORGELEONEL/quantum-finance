@@ -141,7 +141,7 @@
             document.getElementById('cardUs').innerText = `US$ ${totalUs.toFixed(2)}`;
         }
 
-                 async function perguntarIA() {
+                        async function perguntarIA() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const pergunta = document.getElementById('iaPergunta').value.trim();
             const boxChat = document.getElementById('chatResponse');
@@ -152,28 +152,48 @@
             document.getElementById('iaPergunta').value = '';
             boxChat.scrollTop = boxChat.scrollHeight;
 
-            // ESTA LINHA ABAIXO FOI CORRIGIDA COM AS CRASES CORRETAS
-            const ctx = carteira.map(a => `${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}`).join(' | ');
+            // Tratamento caso a carteira ainda esteja vazia no primeiro teste
+            let ctx = carteira.map(a => `${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}`).join(' | ');
+            if (!ctx) {
+                ctx = "Nenhum ativo cadastrado ainda. Investidor iniciante.";
+            }
 
             try {
+                // URL OFICIAL ATUALIZADA PARA O MODELO GEMINI 1.5 PRO DA SUA ASSINATURA
                 const url = "https://googleapis.com";
+
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'x-goog-api-key': apiKey 
+                        'x-goog-api-key': apiKey // Cabeçalho obrigatório para chaves AQ
                     },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados à seguinte pergunta do investidor: " + pergunta }] }] })
+                    body: JSON.stringify({ 
+                        contents: [{ 
+                            parts: [{ 
+                                text: "Você é um analista financeiro sênior Dados da Carteira: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte dúvida: " + pergunta 
+                            }] 
+                        }] 
+                    })
                 });
+
                 const data = await response.json();
-                const texto = data.candidates.content.parts.text;
-                boxChat.innerHTML += `<div class="msg-ai">${texto}</div>`;
+                
+                // Exibe o erro real do Google na tela se a chave estiver ruim
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                const textoIA = data.candidates.content.parts.text;
+                boxChat.innerHTML += `<div class="msg-ai">${textoIA}</div>`;
+
             } catch (e) {
-                boxChat.innerHTML += `<div class="msg-ai" style="color:#f87171;">⚠️ Erro ao falar com o Gemini PRO. Verifique sua chave ou se o projeto no Google Cloud está ativo.</div>`;
+                // Agora o código vai cuspir o erro REAL do Google na tela para sabermos o que houve
+                boxChat.innerHTML += `<div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>`;
             }
             boxChat.scrollTop = boxChat.scrollHeight;
-        }
-
+        } 
+        
         renderizarDashboard();
     </script>
 </body>
