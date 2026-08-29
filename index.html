@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-< lang="pt-BR">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +39,7 @@
         .btn-send { background: #334155; color: #34d399; border: 1px solid #475569; padding: 0 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-<>
+<body>
     <div class="container">
         <header>
             <div><h1>Quantum Finance AI 🚀</h1><p>Dashboard Inteligente integrado ao Gemini PRO</p></div>
@@ -141,58 +142,14 @@
             document.getElementById('cardUs').innerText = `US$ ${totalUs.toFixed(2)}`;
         }
 
-                        async function perguntarIA() {
+        async function perguntarIA() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const pergunta = document.getElementById('iaPergunta').value.trim();
             const boxChat = document.getElementById('chatResponse');
-
             if (!apiKey || !pergunta) return alert("Insira a API Key e a pergunta!");
-
             boxChat.innerHTML += `<div class="msg-user">${pergunta}</div>`;
-            document.getElementById('iaPergunta').value = '';
-            boxChat.scrollTop = boxChat.scrollHeight;
-
-            // Tratamento caso a carteira ainda esteja vazia no primeiro teste
-            let ctx = carteira.map(a => `${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}`).join(' | ');
-            if (!ctx) {
-                ctx = "Nenhum ativo cadastrado ainda. Investidor iniciante.";
-            }
-
-            try {
-                // URL OFICIAL ATUALIZADA PARA O MODELO GEMINI 1.5 PRO DA SUA ASSINATURA
-                const url = "https://googleapis.com";
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-goog-api-key': apiKey // Cabeçalho obrigatório para chaves AQ
-                    },
-                    body: JSON.stringify({ 
-                        contents: [{ 
-                            parts: [{ 
-                                text: "Você é um analista financeiro sênior Dados da Carteira: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte dúvida: " + pergunta 
-                            }] 
-                        }] 
-                    })
-                });
-
-                const data = await response.json();
-                
-                // Exibe o erro real do Google na tela se a chave estiver ruim
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                const textoIA = data.candidates.content.parts.text;
-                boxChat.innerHTML += `<div class="msg-ai">${textoIA}</div>`;
-
-            } catch (e) {
-                // Agora o código vai cuspir o erro REAL do Google na tela para sabermos o que houve
-                boxChat.innerHTML += `<div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>`;
-            }
-            boxChat.scrollTop = boxChat.scrollHeight;
-        } 
+document.getElementById('iaPergunta').value = '';boxChat.scrollTop = boxChat.scrollHeight;let ctx = carteira.map(a => ${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}).join(' | ');if (!ctx) ctx = "Nenhum ativo cadastrado ainda.";try {// Link misto oficial aceito por chaves AQ em ambientes webconst url = "googleapis.com" + apiKey;const response = await fetch(url, {method: 'POST',headers: {'Content-Type': 'application/json'},body: JSON.stringify({ contents: [{ parts: [{ text: "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte pergunta do investidor: " + pergunta }] }] })});const data = await response.json();if (data.error) {throw new Error(data.error.message);}const textoIA = data.candidates.content.parts.text;boxChat.innerHTML += <div class="msg-ai">${textoIA}</div>;} catch (e) {// Exibe o erro de forma clara na telaboxChat.innerHTML += <div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>;}boxChat.scrollTop = boxChat.scrollHeight;
+}
         
         renderizarDashboard();
     </script>
