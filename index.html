@@ -142,15 +142,56 @@
             document.getElementById('cardUs').innerText = `US$ ${totalUs.toFixed(2)}`;
         }
 
-        async function perguntarIA() {
+                async function perguntarIA() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const pergunta = document.getElementById('iaPergunta').value.trim();
             const boxChat = document.getElementById('chatResponse');
+
             if (!apiKey || !pergunta) return alert("Insira a API Key e a pergunta!");
+
             boxChat.innerHTML += `<div class="msg-user">${pergunta}</div>`;
-document.getElementById('iaPergunta').value = '';boxChat.scrollTop = boxChat.scrollHeight;let ctx = carteira.map(a => ${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}).join(' | ');if (!ctx) ctx = "Nenhum ativo cadastrado ainda.";try {// Link misto oficial aceito por chaves AQ em ambientes webconst url = "googleapis.com" + apiKey;const response = await fetch(url, {method: 'POST',headers: {'Content-Type': 'application/json'},body: JSON.stringify({ contents: [{ parts: [{ text: "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte pergunta do investidor: " + pergunta }] }] })});const data = await response.json();if (data.error) {throw new Error(data.error.message);}const textoIA = data.candidates.content.parts.text;boxChat.innerHTML += <div class="msg-ai">${textoIA}</div>;} catch (e) {// Exibe o erro de forma clara na telaboxChat.innerHTML += <div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>;}boxChat.scrollTop = boxChat.scrollHeight;
-}
-        
+            document.getElementById('iaPergunta').value = '';
+            boxChat.scrollTop = boxChat.scrollHeight;
+            
+            let ctx = carteira.map(a => `${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}`).join(' | ');
+            if (!ctx) ctx = "Nenhum ativo cadastrado ainda.";
+
+            try {
+                // 1. URL limpa e oficial para o modelo estável do Gemini PRO
+                const url = "https://googleapis.com";
+
+                // 2. Envio obrigatório da chave AQ pelo cabeçalho (exigência do Google PRO)
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey 
+                    },
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte pergunta do investidor: " + pergunta }] }] 
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Mostra o erro exato do Google se a chave estiver com problemas no console cloud
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                const textoIA = data.candidates[0].content.parts[0].text;
+                boxChat.innerHTML += `<div class="msg-ai">${textoIA}</div>`;
+            } catch (e) {
+                // Trata erros de rede genéricos ou rejeições do servidor
+                if (e.message.includes("Failed to fetch")) {
+                    boxChat.innerHTML += `<div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: Erro de autenticação. Verifique se a sua chave AQ possui restrições de segurança ou se o faturamento do projeto está ativo no Google Cloud Console.</div>`;
+                } else {
+                    boxChat.innerHTML += `<div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>`;
+                }
+            }
+            boxChat.scrollTop = boxChat.scrollHeight;
+        }
+ 
         renderizarDashboard();
     </script>
 </body>
