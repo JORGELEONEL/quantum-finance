@@ -152,9 +152,38 @@
             document.getElementById('cardUs').innerText = `US$ ${totalUs.toFixed(2)}`;
         }
 
-        window.perguntarIA = async function() {
-           const apiKey = document.getElementById('apiKey').value.trim();const pergunta = document.getElementById('iaPergunta').value.trim();const boxChat = document.getElementById('chatResponse');if (!apiKey || !pergunta) return alert("Insira a API Key e a pergunta!");boxChat.innerHTML += <div class="msg-user">${pergunta}</div>;document.getElementById('iaPergunta').value = '';boxChat.scrollTop = boxChat.scrollHeight;let ctx = window.carteira.map(a => ${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}).join(' | ');if (!ctx) ctx = "Nenhum ativo cadastrado ainda.";try {// INICIALIZA O CONECTOR DO GOOGLE COM O NOVO PADRÃO DE CHAVES AQ PROconst ai = new GoogleGenAI({ apiKey: apiKey });const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });const prompt = "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte pergunta do investidor: " + pergunta;const result = await model.generateContent(prompt);const response = await result.response;const textoIA = response.text();boxChat.innerHTML += <div class="msg-ai">${textoIA}</div>;} catch (e) {boxChat.innerHTML += <div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>;}boxChat.scrollTop = boxChat.scrollHeight;}
-        renderizarDashboard(); 
+                window.perguntarIA = async function() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const pergunta = document.getElementById('iaPergunta').value.trim();
+            const boxChat = document.getElementById('chatResponse');
+            if (!apiKey || !pergunta) return alert("Insira a API Key e a pergunta!");
+            
+            boxChat.innerHTML += `<div class="msg-user">${pergunta}</div>`;
+            document.getElementById('iaPergunta').value = '';
+            boxChat.scrollTop = boxChat.scrollHeight;
+            
+            let ctx = window.carteira.map(a => `${a.ticker}: Qtd ${a.qtd}, Méd ${a.preco}, Atu ${a.precoAtual}`).join(' | ');
+            if (!ctx) ctx = "Nenhum ativo cadastrado ainda.";
+
+            try {
+                // Conexão oficial usando a biblioteca do Google para o Gemini PRO
+                const ai = new GoogleGenAI({ apiKey: apiKey });
+                const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+                const prompt = "Você é um analista financeiro sênior. Minha Carteira de Investimentos: [" + ctx + "]. Responda detalhadamente e em formato de tópicos organizados em português à seguinte pergunta do investidor: " + pergunta;
+                
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const textoIA = response.text();
+
+                boxChat.innerHTML += `<div class="msg-ai">${textoIA}</div>`;
+            } catch (e) {
+                boxChat.innerHTML += `<div class="msg-ai" style="color:#f87171;">⚠️ Falha no Gemini PRO: ${e.message}</div>`;
+            }
+            boxChat.scrollTop = boxChat.scrollHeight;
+        }
+        renderizarDashboard();
     </script>
 </body>
 </html>
+
